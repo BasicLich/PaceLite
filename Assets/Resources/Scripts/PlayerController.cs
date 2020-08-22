@@ -105,11 +105,12 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (GetComponent<Player>().currHP == 0)
+            if (GetComponent<Player>().currHP == 0 || GameObject.Find("Arena").GetComponent<Logic>().isVictorious)
             {
                 if (Input.GetKeyDown(KeyCode.Space))
                 {
                     GameObject.Find("Canvas").GetComponent<UI>().DeathDefade();
+                    GameObject.Find("Canvas").GetComponent<UI>().VictoryDefade();
                     GameObject.Find("Arena").GetComponent<Logic>().Restart();
                 }
                 else if (Input.GetKeyDown(KeyCode.Escape))

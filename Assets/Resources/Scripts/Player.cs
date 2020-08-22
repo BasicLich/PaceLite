@@ -10,7 +10,7 @@ public class Player : Entity
 
     public override void TakeDamage(int dmg)
     {
-        base.TakeDamage(dmg);
+        //base.TakeDamage(dmg);
         Camera.main.GetComponent<CameraHandler>().Shake(0.25f, 0.1f);
         GetComponent<PlayerController>().RefreshUI();
     }
@@ -95,6 +95,43 @@ public class Player : Entity
                         break;
                 }
                 break;
+            case "Dual":
+                switch (direction)
+                {
+                    case 0:
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        break;
+                    case 1:
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        break;
+                    case 2:
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        break;
+                    case 3:
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        break;
+                }
+                break;
+            case "Whirl":
+                newScheme.scheme.Add(new Vector2(0, 1));
+                newScheme.scheme.Add(new Vector2(1, 1));
+                newScheme.scheme.Add(new Vector2(1, 0));
+                newScheme.scheme.Add(new Vector2(1, -1));
+                newScheme.scheme.Add(new Vector2(0, -1));
+                newScheme.scheme.Add(new Vector2(-1, -1));
+                newScheme.scheme.Add(new Vector2(-1, 0));
+                newScheme.scheme.Add(new Vector2(-1, 1));
+                break;
+            case "Cross":
+                newScheme.scheme.Add(new Vector2(0, 1));
+                newScheme.scheme.Add(new Vector2(1, 0));
+                newScheme.scheme.Add(new Vector2(0, -1));
+                newScheme.scheme.Add(new Vector2(-1, 0));
+                break;
             default:
                 break;
         }
@@ -145,6 +182,56 @@ public class Player : Entity
                         break;
                 }
                 break;
+            case "L":
+                switch (direction)
+                {
+                    case 0:
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        break;
+                    case 1:
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        break;
+                    case 2:
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        break;
+                    case 3:
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        break;
+                }
+                break;
+            case "Sprint":
+                switch (direction)
+                {
+                    case 0:
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        newScheme.scheme.Add(new Vector2(0, 1));
+                        break;
+                    case 1:
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        newScheme.scheme.Add(new Vector2(1, 0));
+                        break;
+                    case 2:
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        newScheme.scheme.Add(new Vector2(0, -1));
+                        break;
+                    case 3:
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        newScheme.scheme.Add(new Vector2(-1, 0));
+                        break;
+                }
+                break;
             case "Clockwise":
                 switch (direction)
                 {
@@ -184,6 +271,10 @@ public class Player : Entity
                 if (position.Neighbour((int)vec.x, (int)vec.y) && position.Neighbour((int)vec.x, (int)vec.y).contester)
                 {
                     position.Neighbour((int)vec.x, (int)vec.y).contester.TakeDamage(str);
+                    targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
+                }
+                else
+                {
                     targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
                 }
             }
@@ -233,9 +324,9 @@ public class Player : Entity
     {
         string newScheme = "Basic";
 
-        newScheme = GameObject.Find("Canvas/Attack").transform.GetChild(Random.Range(1, GameObject.Find("Canvas/Attack").transform.childCount)).gameObject.name;
+        newScheme = GameObject.Find("Canvas/Attack").transform.GetChild(Random.Range(2, GameObject.Find("Canvas/Attack").transform.childCount)).gameObject.name;
 
-        if (GetComponent<PlayerController>().moves.Exists((x)=>x.Equals(newScheme)))
+        if (GetComponent<PlayerController>().attacks.Exists((x)=>x.Equals(newScheme)))
         {
             GameObject.Find("Canvas").GetComponent<UI>().Prompt("Attack reinforced - "+newScheme);
         }
@@ -248,7 +339,20 @@ public class Player : Entity
     }
     private void NewMoveScheme()
     {
+        string newScheme = "Basic";
 
+        newScheme = GameObject.Find("Canvas/Move").transform.GetChild(Random.Range(2, GameObject.Find("Canvas/Move").transform.childCount)).gameObject.name;
+
+        if (GetComponent<PlayerController>().moves.Exists((x) => x.Equals(newScheme)))
+        {
+            GameObject.Find("Canvas").GetComponent<UI>().Prompt("Move reinforced - " + newScheme);
+        }
+        else
+        {
+            GameObject.Find("Canvas").GetComponent<UI>().Prompt("Move learned - " + newScheme);
+        }
+
+        GetComponent<PlayerController>().moves.Add(newScheme);
     }
 
     public override void TickMoves()

@@ -14,6 +14,7 @@ public class Logic : MonoBehaviour
     private float lastTick;
     private bool isPaused = true;
     private bool tutorial = false;
+    public bool isVictorious = false;
 
     public Tile[,] grid;
 
@@ -22,6 +23,7 @@ public class Logic : MonoBehaviour
     public int waveNumber = 0;
     public int waveClearingTreshold = 2;
     public int movesRemaining = 0;
+    public int bossWave = 10;
 
     // Start is called before the first frame update
     void Start()
@@ -58,16 +60,21 @@ public class Logic : MonoBehaviour
         {
             for (int y = 0; y<9; y++)
             {
-                if (x == 1 && y == 1 || x== 7 && y==7 || x==1 &&y==7 || x==7 &&y==1)
+                if (x == 1 && y == 1 || x== 7 && y==7 || x==1 &&y==7 || x==7 &&y==1 || x == 1 && y == 4 || x == 4 && y == 1 || x == 7 && y == 4 || x == 4 && y == 7)
                 {
-                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].GetComponent<SpriteRenderer>().sprite = Resources.LoadAll<Sprite>("Sprites/spritesheet")[119];
-                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].obstructed = true;
+                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester = Instantiate(Resources.Load("Prefabs/Enemies/Knight") as GameObject, GameObject.Find("Arena/Entities").transform).GetComponent<Entity>();
+                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester.position = grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y];
+                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester.transform.position = grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].transform.position;
                 }
-                else
+                grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].GetComponent<SpriteRenderer>().sprite = Resources.LoadAll<Sprite>("Sprites/spritesheet")[15];
+
+                Color newColor = Color.white;
+                if ((x+y%2)%2==0)
                 {
-                    grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].GetComponent<SpriteRenderer>().sprite = Resources.LoadAll<Sprite>("Sprites/spritesheet")[15];
+                    newColor = Color.Lerp(newColor, Color.gray, 0.5f);
                 }
-                grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].GetComponent<SpriteRenderer>().color = Color.white;
+                grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].GetComponent<SpriteRenderer>().color = newColor;
+
             }
         }
     }
@@ -101,6 +108,7 @@ public class Logic : MonoBehaviour
         currentTick = 0;
         isPaused = false;
         tutorial = false;
+        isVictorious = false;
 
         Start();
         GameObject.FindWithTag("Player").GetComponent<PlayerController>().Start();
@@ -126,8 +134,18 @@ public class Logic : MonoBehaviour
 
     public void Tick()
     {
+        if (GameObject.FindGameObjectsWithTag("Enemy").Where((x) => x.GetComponent<Knight>() && !x.GetComponent<Knight>().invincible).Count()==0)
+        {
+            if (waveNumber == bossWave)
+            {
+                GameObject.Find("Canvas").GetComponent<UI>().VictoryDisplay();
+                isPaused = true;
+                isVictorious = true;
+            }
+        }
+
         currentTick++;
-        if (waveNumber > 0)
+        if (waveNumber > 0 && waveNumber!=bossWave)
         {
             movesRemaining--;
         }
@@ -149,8 +167,15 @@ public class Logic : MonoBehaviour
             ent.GetComponent<Entity>().TickMoves();
         }
 
+        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Submerging"))
+        {
+            tile.GetComponent<Tile>().Submerge((float) ((float)waveLength - movesRemaining) / waveLength);
+        }
+
         if ((movesRemaining<=0 || GameObject.FindGameObjectsWithTag("Enemy").Length<=waveClearingTreshold ) && !tutorial)
         {
+            waveNumber++;
+
             movesRemaining = waveLength;
             SpawnEnemies();
             ShrinkMap();
@@ -177,6 +202,11 @@ public class Logic : MonoBehaviour
                         grid[x, y].gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
                         grid[x, y].obstructed = true;
                         grid[x, y].gameObject.tag = "Submerged";
+
+                        if (y > waveNumber && y < grid.GetLength(1) - waveNumber - 1 && grid[x, y].Left())
+                        {
+                            grid[x, y].Left().gameObject.tag = "Submerging";
+                        }
                     }
                     else if (x == waveNumber)
                     {
@@ -185,6 +215,11 @@ public class Logic : MonoBehaviour
                         grid[x, y].gameObject.GetComponent<SpriteRenderer>().flipX = true;
                         grid[x, y].obstructed = true;
                         grid[x, y].gameObject.tag = "Submerged";
+
+                        if (y > waveNumber && y < grid.GetLength(1) - waveNumber - 1 && grid[x, y].Right())
+                        {
+                            grid[x, y].Right().gameObject.tag = "Submerging";
+                        }
                     }
                 }
                 if(x > waveNumber - 1 && x < grid.GetLength(0) - waveNumber) 
@@ -196,6 +231,10 @@ public class Logic : MonoBehaviour
                         grid[x, y].obstructed = true;
                         grid[x, y].gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
                         grid[x, y].gameObject.tag = "Submerged";
+                        if( x>waveNumber && x<grid.GetLength(0)-waveNumber-1 && grid[x, y].Bottom())
+                        {
+                            grid[x, y].Bottom().gameObject.tag = "Submerging";
+                        }
                     }
                     else if (y == waveNumber)
                     {
@@ -204,6 +243,11 @@ public class Logic : MonoBehaviour
                         grid[x, y].obstructed = true;
                         grid[x, y].gameObject.GetComponent<SpriteRenderer>().color = Color.gray;
                         grid[x, y].gameObject.tag = "Submerged";
+
+                        if (x > waveNumber && x < grid.GetLength(0) - waveNumber - 1 && grid[x, y].Top())
+                        {
+                            grid[x, y].Top().gameObject.tag = "Submerging";
+                        }
                     }
                 }
             }
@@ -213,14 +257,45 @@ public class Logic : MonoBehaviour
         grid[waveNumber, waveNumber].GetComponent<SpriteRenderer>().sprite = Resources.LoadAll<Sprite>("Sprites/spritesheet")[247];
         grid[grid.GetLength(0) - waveNumber -1, grid.GetLength(1) - waveNumber -1].GetComponent<SpriteRenderer>().sprite = Resources.LoadAll<Sprite>("Sprites/spritesheet")[247];
 
-
-        foreach (GameObject ent in GameObject.FindGameObjectsWithTag("Enemy").Where((x)=>x.GetComponent<Entity>().position.tag == "Submerged"))
+        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Submerged"))
         {
-            ent.GetComponent<Entity>().Die("Drown");
+            tile.GetComponent<Tile>().Submerge(0f);
         }
-        if (GameObject.FindWithTag("Player").GetComponent<Player>().position.tag == "Submerged")
+
+        foreach (Transform trans in GameObject.Find("Arena/Entities/").transform)
         {
-            GameObject.FindWithTag("Player").GetComponent<Player>().Die("Drown");
+            Entity ent = trans.gameObject.GetComponent<Entity>();
+            if (ent.position.gameObject.tag == "Submerged")
+            {
+                if (!ent.stationary && ent.position.Left() && !ent.position.Left().obstructed && !ent.position.Left().contester)
+                {
+                    ent.Move(ent.position.Left());
+                    ent.Move(ent.position);
+                    ent.Transition(0f);
+                }
+                else if (!ent.stationary && ent.position.Right() && !ent.position.Right().obstructed && !ent.position.Right().contester)
+                {
+                    ent.Move(ent.position.Right());
+                    ent.Move(ent.position);
+                    ent.Transition(0f);
+                }
+                else if (!ent.stationary && ent.position.Top() && !ent.position.Top().obstructed && !ent.position.Top().contester)
+                {
+                    ent.Move(ent.position.Top());
+                    ent.Move(ent.position);
+                    ent.Transition(0f);
+                }
+                else if (!ent.stationary && ent.position.Bottom() && !ent.position.Bottom().obstructed && !ent.position.Bottom().contester)
+                {
+                    ent.Move(ent.position.Bottom());
+                    ent.Move(ent.position);
+                    ent.Transition(0f);
+                }
+                else
+                {
+                    ent.Die("Drown");
+                }
+            }
         }
     }
 
@@ -245,7 +320,7 @@ public class Logic : MonoBehaviour
         switch (wave)
         {
             case 1:
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 20; i++)
                 {
                     spawnTable.Add("Rat");
                 }
@@ -331,7 +406,16 @@ public class Logic : MonoBehaviour
 
     private void SpawnEnemies()
     {
-        waveNumber++;
+        if (waveNumber == bossWave)
+        {
+            foreach(GameObject obj in GameObject.FindGameObjectsWithTag("Enemy").Where((x) => x.GetComponent<Knight>()))
+            {
+                obj.GetComponent<Knight>().WakeUp();
+            }
+            GameObject.Find("Canvas").GetComponent<UI>().Prompt("The knights awake!");
+            return;
+        }
+
 
         int maxAttempts = 333;
 
@@ -368,8 +452,15 @@ public class Logic : MonoBehaviour
 
     public void UpdateCounter()
     {
-        GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text = "Enemies: " + GameObject.FindGameObjectsWithTag("Enemy").Length;
-        GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n" + movesRemaining + " moves untill the next wave";
+        if (waveNumber != bossWave)
+        {
+            GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n" + movesRemaining + " moves untill the next wave";
+        }
+        else
+        {
+            GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n";
+        }
+        GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text = "Enemies: " + GameObject.FindGameObjectsWithTag("Enemy").Where((x)=>!x.GetComponent<Chest>() && !(x.GetComponent<Knight>() && x.GetComponent<Knight>().invincible)).Count();
 
 
     }

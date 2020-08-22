@@ -71,7 +71,6 @@ public class UI : MonoBehaviour
         GameObject.Find("Canvas/DeathScreen/").transform.Find("Content").gameObject.SetActive(false);
         GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().raycastTarget = false;
         GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().color = new Color(0, 0, 0, 0);
-
     }
 
     private void Fade()
@@ -99,6 +98,34 @@ public class UI : MonoBehaviour
 
     public void Prompt(string msg)
     {
-        Debug.Log(msg);
+        GameObject.Find("Canvas/Prompt").GetComponent<Prompt>().ShowMessage(msg);
+    }
+
+    public void VictoryDisplay()
+    {
+        GameObject.Find("Canvas").transform.Find("VictoryScreen").gameObject.SetActive(true);
+        VictoryFade();
+    }
+    private void VictoryFade()
+    {
+        GameObject.Find("Canvas/VictoryScreen/").transform.Find("Content").gameObject.SetActive(true);
+        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().raycastTarget = true;
+        InvokeRepeating("Invoke_VictoryFade", 0, 0.01f);
+    }
+    private void Invoke_VictoryFade()
+    {
+        Color newColor = GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color;
+        newColor.a += 0.01f;
+        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color = newColor;
+        if (newColor.a > 0.5f)
+        {
+            CancelInvoke();
+        }
+    }
+    public void VictoryDefade()
+    {
+        GameObject.Find("Canvas/VictoryScreen/").transform.Find("Content").gameObject.SetActive(false);
+        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().raycastTarget = false;
+        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color = new Color(0, 0, 0, 0);
     }
 }

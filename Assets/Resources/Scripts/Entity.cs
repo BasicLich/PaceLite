@@ -26,13 +26,23 @@ public class Entity : MonoBehaviour
     public int maxHP;
     public int str;
 
+    public bool bleeding = true;
+
     public bool friendlyFiring;
     private int direction = 0;
     public  bool actionPerformed = false;
-    private bool alive = true;
+    protected bool alive = true;
+    public bool stationary = false;
+    private bool pathBlocked = false;
+    private bool enemyInRange = false;
 
     public virtual void TakeDamage(int dmg)
     {
+        if (bleeding)
+        {
+            position.Splatter();
+        }
+
         if (currHP > dmg)
         {
             currHP -= dmg;
@@ -47,14 +57,15 @@ public class Entity : MonoBehaviour
 
     public virtual void Die(string way = "Regular")
     {
+        CancelInvoke();
         position.contester = null;
         if (way.Equals("Regular"))
         {
-            transform.Find("Body").GetComponent<Animator>().Play(anim_death);
+            GetComponent<Animator>().Play(anim_death);
         }
         else
         {
-            transform.Find("Body").GetComponent<Animator>().Play(anim_drown);
+            GetComponent<Animator>().Play(anim_drown);
         }
         InvokeRepeating("Invoke_Death", 1f, 0.1f);
     }
@@ -67,7 +78,7 @@ public class Entity : MonoBehaviour
     void Start()
     {
         SetSchemes();
-        transform.Find("Body").GetComponent<Animator>().Play(anim_spawn);
+        GetComponent<Animator>().Play(anim_spawn);
     }
 
     public virtual void SetSchemes()
@@ -81,7 +92,7 @@ public class Entity : MonoBehaviour
         {
             return;
         }
-
+        enemyInRange = false;
         actionPerformed = false;
 
         targets.Clear();
@@ -90,20 +101,28 @@ public class Entity : MonoBehaviour
             targets.Clear();
             foreach (Vector2 vec in attacks.ElementAt((direction + i) % 4).scheme)
             {
-                if (position.Neighbour((int)vec.x, (int)vec.y) && position.Neighbour((int)vec.x, (int)vec.y).contester)
+                if (position.Neighbour((int)vec.x, (int)vec.y))
                 {
-                    if ((position.Neighbour((int)vec.x, (int)vec.y).contester.GetComponent<Player>() || friendlyFiring))
+                    if (position.Neighbour((int)vec.x, (int)vec.y).contester && (position.Neighbour((int)vec.x, (int)vec.y).contester.GetComponent<Player>() || friendlyFiring))
                     {
                         position.Neighbour((int)vec.x, (int)vec.y).contester.TakeDamage(str);
+                        targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
+                        enemyInRange = true;
+                    }
+                    else
+                    {
                         targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
                     }
                 }
             }
             if (targets.Count > 0)
             {
-                actionPerformed = true;
-                PerformAttacks(0f);
-                break;
+                if (enemyInRange)
+                {
+                    actionPerformed = true;
+                    PerformAttacks(0f);
+                    break;
+                }
             }
         }
     }
@@ -113,12 +132,13 @@ public class Entity : MonoBehaviour
         {
             path.Clear();
             path.Add(position);
+            pathBlocked = false;
             Scheme scheme = moves.ElementAt((int)Random.Range(0, (float)moves.Count));
 
 
 
             //movement
-            if (targets.Count == 0)
+            if (!enemyInRange)
             {
                 foreach (Vector2 vec in scheme.scheme)
                 {
@@ -144,6 +164,12 @@ public class Entity : MonoBehaviour
                     {
                         Move(nextPos);
                     }
+                    else if(nextPos)
+                    {
+                        Move(nextPos, true);
+                        Move(position, true);
+                        break;
+                    }
                 }
                 if (path.Count > 1)
                 {
@@ -154,14 +180,20 @@ public class Entity : MonoBehaviour
         }
     }
 
-    public void Move(Tile newPos)
+    public void Move(Tile newPos, bool blocked = false)
     {
-        transform.Find("Body").GetComponent<Animator>().Play(anim_move);
-        position.contester = null;
-        position = newPos;
-        newPos.contester = this;
-
-        path.Add(position);
+        GetComponent<Animator>().Play(anim_move);
+        if (!blocked)
+        {
+            position.contester = null;
+            position = newPos;
+            newPos.contester = this;
+        }
+        else
+        {
+            pathBlocked = true;
+        }
+        path.Add(newPos);
     }
 
     public void Transition(float speed)
@@ -177,17 +209,30 @@ public class Entity : MonoBehaviour
     private void Transition()
     {
         progress += progressGain;
-        transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, progress);
+        if (path.Count>1 && !pathBlocked)
+        {
+            transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, progress);
+        }
+        else if(path.Count == 3 && pathBlocked)
+        {
+            transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, progress/4f);
+        }
+        else if(path.Count == 2 && pathBlocked)
+        {
+            transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, 3f / 4 + progress / 4f);
+        }
+
         if (progress >= 1f)
         {
-            if (path.ElementAt(0).pickup)
+            if (path.ElementAt(1).pickup && !pathBlocked)
             {
-                ApplyPickup(path.ElementAt(0).pickup);
+                ApplyPickup(path.ElementAt(1).pickup);
             }
             path.RemoveAt(0);
             progress -= 1f;
             if (path.Count < 2)
             {
+                
                 CancelInvoke();
             }
         }
@@ -195,8 +240,7 @@ public class Entity : MonoBehaviour
 
     public virtual void ApplyPickup(Pickup pickup)
     {
-        pickup.position.pickup = null;
-        Destroy(pickup.gameObject);
+        pickup.Pick();
     }
 
     public void PerformAttacks(float foo)

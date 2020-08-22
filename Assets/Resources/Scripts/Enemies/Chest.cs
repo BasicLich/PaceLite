@@ -12,29 +12,24 @@ public class Chest : Entity
             string type = "HP";
             if (!advancedChest)
             {
-                switch ((int)Random.Range(0, 2f)*2)
+                if (Random.Range(0, 1f) > 0.5f)
                 {
-                    case 0:
-                        type = "MaxHP";
-                        break;
-                    default:
-                        type = "HP";
-                        break;
+                    type = "MaxHP";
+                }
+                else
+                {
+                    type = "HP";
                 }
             }
             else
             {
-                switch ((int)Random.Range(0, 2f)*2)
+                if(Random.Range(0, 1f) > 0.5f)
                 {
-                    case 0:
-                        type = "STR";
-                        break;
-                    case 1:
-                        type = "Move";
-                        break;
-                    default:
-                        type = "Attack";
-                        break;
+                    type = "Move";
+                }
+                else
+                {
+                    type = "Attack";
                 }
             }
             position.pickup = Instantiate(Resources.Load("Prefabs/Pickups/Pickup_" + type) as GameObject, GameObject.Find("Arena/Pickups").transform).GetComponent<Pickup>();

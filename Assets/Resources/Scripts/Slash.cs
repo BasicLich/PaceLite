@@ -13,7 +13,7 @@ public class Slash : MonoBehaviour
     {
         transform.position = pos;
         createdOn = Time.time;
-        this.str = str;
+        this.str = 1;
         transform.localScale = new Vector3(str+0.5f, str+ 0.5f, 1f);
 
         if (player)
