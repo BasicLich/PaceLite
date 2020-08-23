@@ -247,7 +247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intensity: 0.6
   raycast: 1
-  speed: 0.01
+  speed: 0.002
   fade: {fileID: 407023440}
   content: {fileID: 1190124631}
   isOn: 0
@@ -5213,7 +5213,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -18720,7 +18720,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   intensity: 0.6
   raycast: 1
-  speed: 0.01
+  speed: 0.003
   fade: {fileID: 1464831265}
   content: {fileID: 1786167326}
   isOn: 0
@@ -18815,7 +18815,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 419cd34e7be0f1b4681a019a657c9210, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speedMod: 15000
+  movementType: Basic
+  attackType: Basic
   moves: []
   attacks: []
   rerollAttack: 0

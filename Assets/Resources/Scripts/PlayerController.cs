@@ -6,10 +6,9 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speedMod = 100f;
 
-    private string movementType = "Basic";
-    private string attackType = "Basic";
+    public string movementType = "Basic";
+    public string attackType = "Basic";
 
     public List<string> moves;
     public List<string> attacks;
@@ -37,18 +36,18 @@ public class PlayerController : MonoBehaviour
 
         if (rerollAttack || (!rerollAttack && !rerollMove))
         {
-            if (attacks.Count > 3)
+            if (attacks.Count > 2)
             {
                 do
                 {
                     attackType = attacks.ElementAt(Random.Range(0, attacks.Count));
-                } while (movementType.Equals(prevMovement));
+                } while (attackType.Equals(prevAttack));
             }
             rerollAttack = false;
         }
         if (rerollMove || (!rerollAttack && !rerollMove))
         {
-            if (moves.Count > 3)
+            if (moves.Count > 2)
             {
                 do
                 {

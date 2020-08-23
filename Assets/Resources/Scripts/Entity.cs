@@ -108,7 +108,7 @@ public class Entity : MonoBehaviour
                     if (position.Neighbour((int)vec.x, (int)vec.y).contester && (position.Neighbour((int)vec.x, (int)vec.y).contester.GetComponent<Player>() || friendlyFiring))
                     {
                         targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
-                        attackDelay = position.Neighbour((int)vec.x, (int)vec.y).contester.path.Count > 0 ? secondsPerMove : 0f;
+                        attackDelay = position.Neighbour((int)vec.x, (int)vec.y).contester.path.Count > 1 ? secondsPerMove : 0f;
                         enemyInRange = true;
                     }
                     else

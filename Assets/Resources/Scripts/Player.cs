@@ -359,6 +359,8 @@ public class Player : Entity
         }
 
         GetComponent<PlayerController>().attacks.Add(newScheme);
+        GetComponent<PlayerController>().attackType = newScheme;
+        GetComponent<PlayerController>().RefreshUI();
     }
     private void NewMoveScheme()
     {
@@ -376,6 +378,9 @@ public class Player : Entity
         }
 
         GetComponent<PlayerController>().moves.Add(newScheme);
+        GetComponent<PlayerController>().movementType = newScheme;
+        GetComponent<PlayerController>().RefreshUI();
+
     }
 
     public override void TickMoves()

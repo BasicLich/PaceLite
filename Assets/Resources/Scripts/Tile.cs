@@ -77,11 +77,6 @@ public class Tile: MonoBehaviour
     }
     public void Submerge(float progress)
     {
-        if (pickup)
-        {
-            pickup.Pick();
-        }
-
         if (!GameObject.Find("Arena").GetComponent<Logic>().tutorial)
         {
             Color newColor = transform.Find("Water").GetComponent<SpriteRenderer>().color;

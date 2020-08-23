@@ -118,6 +118,15 @@ public class Logic : MonoBehaviour
         GameObject.FindWithTag("Player").GetComponent<Player>().alive = true;
 
 
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().attacks.Clear();
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().attacks.Add("Basic");
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().attacks.Add("Basic");
+
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().moves.Clear();
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().moves.Add("Basic");
+        GameObject.FindWithTag("Player").GetComponent<PlayerController>().moves.Add("Basic");
+
+
         Camera.main.GetComponent<CameraHandler>().following = true;
 
         waveNumber = 0;
@@ -153,13 +162,16 @@ public class Logic : MonoBehaviour
     {
         if (GameObject.FindGameObjectsWithTag("Enemy").Where((x) => x.GetComponent<Knight>() && !x.GetComponent<Knight>().invincible).Count()==0)
         {
-            if (waveNumber == bossWave)
+            if (GameObject.FindGameObjectsWithTag("Enemy").Where((x) => !x.GetComponent<Chest>()).Count() == 8)
             {
-                Camera.main.GetComponent<CameraHandler>().ChangeMusic("Menu");
+                if (waveNumber == bossWave)
+                {
+                    Camera.main.GetComponent<CameraHandler>().ChangeMusic("Menu");
 
-                GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().Enter();
-                isPaused = true;
-                isVictorious = true;
+                    GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().Enter();
+                    isPaused = true;
+                    isVictorious = true;
+                }
             }
         }
 
@@ -199,7 +211,7 @@ public class Logic : MonoBehaviour
             waveNumber++;
 
             movesRemaining = waveLength;
-            if (waveNumber == bossWave)
+            if (waveNumber == bossWave-1)
             {
                 movesRemaining *= 2;
             }
@@ -286,6 +298,10 @@ public class Logic : MonoBehaviour
         foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Submerged"))
         {
             tile.GetComponent<Tile>().Submerge(0f);
+            if (tile.GetComponent<Tile>().pickup)
+            {
+                tile.GetComponent<Tile>().pickup.Pick();
+            }
         }
 
         foreach (Transform trans in GameObject.Find("Arena/Entities/").transform)
@@ -392,19 +408,19 @@ public class Logic : MonoBehaviour
                 break;
             case 7:
                 spawnTable.Add("Necromancer");
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     spawnTable.Add("Skeleton");
                 }
                 break;
             case 8:
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     spawnTable.Add("Skeleton");
                 }
                 break;
             case 9:
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     spawnTable.Add("Necromancer");
                 }
