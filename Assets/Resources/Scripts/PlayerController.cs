@@ -25,7 +25,6 @@ public class PlayerController : MonoBehaviour
         attacks.Add("Basic");
 
         Reroll();
-        RefreshUI();
     }
 
     public void Reroll()
@@ -103,19 +102,33 @@ public class PlayerController : MonoBehaviour
                 RefreshUI();
             }
         }
+        else if (GameObject.Find("Arena").GetComponent<Logic>().tutorial)
+        {
+            if (Input.anyKeyDown)
+            {
+                GameObject.Find("Canvas").GetComponent<UI>().ClickTutorial();
+            }
+        }
         else
         {
             if (GetComponent<Player>().currHP == 0 || GameObject.Find("Arena").GetComponent<Logic>().isVictorious)
             {
-                if (Input.GetKeyDown(KeyCode.Space))
+                if (Input.GetKeyDown(KeyCode.Escape))
                 {
-                    GameObject.Find("Canvas").GetComponent<UI>().DeathDefade();
-                    GameObject.Find("Canvas").GetComponent<UI>().VictoryDefade();
-                    GameObject.Find("Arena").GetComponent<Logic>().Restart();
-                }
-                else if (Input.GetKeyDown(KeyCode.Escape))
-                {
+                    Camera.main.GetComponent<CameraHandler>().OneShot("Click");
                     Application.Quit();
+                }
+                else if (Input.anyKeyDown)
+                {
+                    if (GameObject.Find("Arena").GetComponent<Logic>().isVictorious)
+                    {
+                        Camera.main.GetComponent<CameraHandler>().ChangeMusic("Menu");
+                    }
+
+                    Camera.main.GetComponent<CameraHandler>().OneShot("Click");
+                    GameObject.Find("Canvas/DeathScreen").GetComponent<SubMenu>().Exit();
+                    GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().Exit();
+                    GameObject.Find("Arena").GetComponent<Logic>().Restart();
                 }
             }
         }

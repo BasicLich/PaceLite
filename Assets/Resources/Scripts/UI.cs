@@ -6,126 +6,75 @@ using TMPro;
 
 public class UI : MonoBehaviour
 {
-    public void DeathDisplay()
-    {
-        GameObject.Find("Canvas").transform.Find("DeathScreen").gameObject.SetActive(true);
-        DeathFade();
-    }
 
     public void DisplayWave(int number)
     {
-        GameObject.Find("Canvas/Next Wave").transform.Find("Image").GetComponent<RectTransform>().localScale = new Vector2(1f, 1f);
-        GameObject.Find("Canvas/Next Wave").transform.Find("Image").gameObject.SetActive(true);
-        Vector2 newVec = GameObject.Find("Canvas/Wave Number").GetComponent<RectTransform>().anchorMin = new Vector2(0, 0);
         GameObject.Find("Canvas/Wave Number").GetComponent<TextMeshProUGUI>().text = ""+number;
-        InvokeRepeating("WaveFade", 0.15f, 0.01f);
+        GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha = 1f;
+        InvokeRepeating("WaveFade", 1f, 0.01f);
     }
     private void WaveFade()
     {
-        Vector2 newVec = GameObject.Find("Canvas/Wave Number").GetComponent<RectTransform>().anchorMin;
-        newVec.y += 0.01f;
-        newVec.x += 0.01f;
-
-        GameObject.Find("Canvas/Wave Number").GetComponent<RectTransform>().anchorMin = newVec;
-
-        Color newColor = GameObject.Find("Canvas/Next Wave").transform.Find("Image").GetComponent<Image>().color;
-        newColor.a -= 0.01f;
-        GameObject.Find("Canvas/Next Wave").transform.Find("Image").GetComponent<Image>().color = newColor;
-        GameObject.Find("Canvas/Next Wave").transform.Find("Image").GetComponent<RectTransform>().localScale = new Vector2(1f-newVec.x, 1f-newVec.y);
-
-        if (newVec.y >= 0.9f)
-        {
-            GameObject.Find("Canvas/Wave Number").GetComponent<TextMeshProUGUI>().text = "Wave: " + GameObject.Find("Canvas/Wave Number").GetComponent<TextMeshProUGUI>().text;
-            GameObject.Find("Canvas/Next Wave").transform.Find("Image").gameObject.SetActive(false);
-            CancelInvoke();
-        }
-    }
-
-    public void Button_Start()
-    {
-        GameObject.Find("Canvas/Menu/Content/Start").SetActive(false);
-        GameObject.Find("Canvas/Menu/Content/Logo").GetComponent<Pulse>().isOn = false;
-
-
-        InvokeRepeating("Fade", 0, 0.01f);
-    }
-
-    private void Invoke_DeathFade()
-    {
-        Color newColor = GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().color;
-        newColor.a += 0.01f;
-        GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().color = newColor;
-        if (newColor.a > 0.5f)
+        GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha -= 0.01f;
+        if(GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha <= 0)
         {
             CancelInvoke();
         }
     }
-    public void DeathFade()
-    {
-        GameObject.Find("Canvas/DeathScreen/").transform.Find("Content").gameObject.SetActive(true);
-        GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().raycastTarget = true;
-        InvokeRepeating("Invoke_DeathFade", 0, 0.01f);
-    }
-    public void DeathDefade()
-    {
-        GameObject.Find("Canvas/DeathScreen/").transform.Find("Content").gameObject.SetActive(false);
-        GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().raycastTarget = false;
-        GameObject.Find("Canvas/DeathScreen/Fade").GetComponent<Image>().color = new Color(0, 0, 0, 0);
-    }
 
-    private void Fade()
-    {
-        Color newColor = GameObject.Find("Canvas/Menu/Fade").GetComponent<Image>().color;
-        newColor.a -= 0.01f;
-        GameObject.Find("Canvas/Menu/Fade").GetComponent<Image>().color = newColor;
-
-
-
-        Vector2 vecMax = GameObject.Find("Canvas/Menu/Content").GetComponent<RectTransform>().anchorMax;
-        vecMax.y -= 0.01f;
-
-        GameObject.Find("Canvas/Menu/Content").GetComponent<RectTransform>().anchorMax = vecMax;
-
-
-        if (newColor.a <= 0)
-        {
-            GameObject.Find("Canvas/Menu/Content/").SetActive(false);
-            GameObject.Find("Canvas/Menu/Fade/").SetActive(false);
-            GameObject.Find("Arena/").GetComponent<Logic>().SetPaused(false);
-            CancelInvoke();
-        }
-    }
 
     public void Prompt(string msg)
     {
         GameObject.Find("Canvas/Prompt").GetComponent<Prompt>().ShowMessage(msg);
     }
 
-    public void VictoryDisplay()
+    public void HideUI()
     {
-        GameObject.Find("Canvas").transform.Find("VictoryScreen").gameObject.SetActive(true);
-        VictoryFade();
+        GameObject.Find("Canvas").transform.Find("HP").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("Attack").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("Move").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("Pacer").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("Enemy Counter").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("Wave Number").gameObject.SetActive(false);
+        GameObject.Find("Canvas").transform.Find("HP").gameObject.SetActive(false);
+
     }
-    private void VictoryFade()
+
+    public void ClickTutorial()
     {
-        GameObject.Find("Canvas/VictoryScreen/").transform.Find("Content").gameObject.SetActive(true);
-        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().raycastTarget = true;
-        InvokeRepeating("Invoke_VictoryFade", 0, 0.01f);
-    }
-    private void Invoke_VictoryFade()
-    {
-        Color newColor = GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color;
-        newColor.a += 0.01f;
-        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color = newColor;
-        if (newColor.a > 0.5f)
+        Camera.main.GetComponent<CameraHandler>().OneShot("Click");
+        bool activate = false;
+        int i = 0;
+        foreach(Transform trans in GameObject.Find("Canvas/Tutorial/Content").transform)
         {
-            CancelInvoke();
+            if (activate)
+            {
+                trans.gameObject.SetActive(true);
+                if (i > 1)
+                {
+                    GameObject.Find("Canvas/").transform.Find(trans.gameObject.name).gameObject.SetActive(true);
+                }
+
+                return;
+            }
+            else if (trans.gameObject.activeSelf)
+            {
+                
+                if (i == GameObject.Find("Canvas/Tutorial/Content").transform.childCount-1)
+                {
+                    GameObject.Find("Arena").GetComponent<Logic>().SetPaused(false);
+                    GameObject.Find("Arena").GetComponent<Logic>().StartingSpawn();
+                    GameObject.Find("Canvas/").transform.Find("Wave Number").gameObject.SetActive(true);
+                    GameObject.Find("Canvas/Tutorial").GetComponent<SubMenu>().Exit();
+                }
+                else if (i != GameObject.Find("Canvas/Tutorial/Content").transform.childCount)
+                {
+                    activate = true;
+                    trans.gameObject.SetActive(false);
+                }
+            }
+            i++;
         }
-    }
-    public void VictoryDefade()
-    {
-        GameObject.Find("Canvas/VictoryScreen/").transform.Find("Content").gameObject.SetActive(false);
-        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().raycastTarget = false;
-        GameObject.Find("Canvas/VictoryScreen/Fade").GetComponent<Image>().color = new Color(0, 0, 0, 0);
+        GameObject.Find("Canvas/Tutorial/Content").transform.GetChild(0).gameObject.SetActive(true);
     }
 }

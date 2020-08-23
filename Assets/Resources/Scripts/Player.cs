@@ -10,15 +10,21 @@ public class Player : Entity
 
     public override void TakeDamage(int dmg)
     {
-        //base.TakeDamage(dmg);
+        base.TakeDamage(dmg);
+        Camera.main.GetComponent<CameraHandler>().OneShot("Hurt");
+
         Camera.main.GetComponent<CameraHandler>().Shake(0.25f, 0.1f);
         GetComponent<PlayerController>().RefreshUI();
     }
     public override void Die(string way = "Regular")
     {
+        Camera.main.GetComponent<CameraHandler>().ChangeMusic("Menu");
+
         GetComponent<PlayerController>().RefreshUI();
         GameObject.Find("Arena").GetComponent<Logic>().SetPaused(true);
-        GameObject.Find("Canvas").GetComponent<UI>().DeathDisplay();
+        GameObject.Find("Canvas/DeathScreen").GetComponent<SubMenu>().Enter();
+
+
     }
 
     public void SetSchemes(string moveType, string attackType, int direction)
@@ -289,6 +295,8 @@ public class Player : Entity
 
     public override void ApplyPickup(Pickup pickup)
     {
+
+        Camera.main.GetComponent<CameraHandler>().OneShot("Click");
         switch (pickup.type)
         {
             case "Pickup_HP":
@@ -296,6 +304,7 @@ public class Player : Entity
                 {
                     currHP++;
                 }
+                GetComponent<PlayerController>().RefreshUI();
                 break;
             case "Pickup_MaxHP":
                 if (maxHP < 12)
@@ -304,8 +313,13 @@ public class Player : Entity
                 }
                 else
                 {
+                    if (currHP < maxHP)
+                    {
+                        currHP++;
+                    }
                     GameObject.Find("Canvas").GetComponent<UI>().Prompt("Max HP reached!");
                 }
+                GetComponent<PlayerController>().RefreshUI();
                 break;
             case "Pickup_STR":
                 str++;
@@ -362,5 +376,26 @@ public class Player : Entity
             base.TickMoves();
             isMoving = false;
         }
+    }
+
+    public override void Transition(float speed)
+    {
+        Camera.main.GetComponent<CameraHandler>().following = true;
+        Camera.main.GetComponent<CameraHandler>().OneShot("Step");
+        base.Transition(speed);
+    }
+
+    public override void PerformAttacks(float foo)
+    {
+        Camera.main.GetComponent<CameraHandler>().following = false;
+        base.PerformAttacks(foo);
+    }
+    public override void PerformAttacks()
+    {
+        if (progress >= 1-progressGain)
+        {
+            Camera.main.GetComponent<CameraHandler>().OneShot("Slash");
+        }
+        base.PerformAttacks();
     }
 }

@@ -77,8 +77,11 @@ public class Tile: MonoBehaviour
     }
     public void Submerge(float progress)
     {
-        Color newColor = transform.Find("Water").GetComponent<SpriteRenderer>().color;
-        newColor.a = progress;
-        transform.Find("Water").GetComponent<SpriteRenderer>().color = newColor;
+        if (!GameObject.Find("Arena").GetComponent<Logic>().tutorial)
+        {
+            Color newColor = transform.Find("Water").GetComponent<SpriteRenderer>().color;
+            newColor.a = progress;
+            transform.Find("Water").GetComponent<SpriteRenderer>().color = newColor;
+        }
     }
 }

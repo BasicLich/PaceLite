@@ -13,7 +13,7 @@ public class Logic : MonoBehaviour
     private int currentTick;
     private float lastTick;
     private bool isPaused = true;
-    private bool tutorial = false;
+    public bool tutorial = true;
     public bool isVictorious = false;
 
     public Tile[,] grid;
@@ -79,6 +79,21 @@ public class Logic : MonoBehaviour
         }
     }
 
+    public void GameStart()
+    {
+        if (tutorial)
+        {
+            GameObject.Find("Canvas/Tutorial").GetComponent<SubMenu>().Enter();
+            GameObject.Find("Canvas").GetComponent<UI>().ClickTutorial();
+            isPaused = true;
+        }
+        else
+        {
+            StartingSpawn();
+            isPaused = false;
+        }
+    }
+
     public void Restart()
     {
         foreach (GameObject enemy in GameObject.FindGameObjectsWithTag("Enemy"))
@@ -123,13 +138,13 @@ public class Logic : MonoBehaviour
             {
                 Tick();
             }
+            UpdatePacer();
+            UpdateCounter();
         }
         else
         {
             lastTick = Time.time;
         }
-        UpdatePacer();
-        UpdateCounter();
     }
 
     public void Tick()
@@ -138,7 +153,9 @@ public class Logic : MonoBehaviour
         {
             if (waveNumber == bossWave)
             {
-                GameObject.Find("Canvas").GetComponent<UI>().VictoryDisplay();
+                Camera.main.GetComponent<CameraHandler>().ChangeMusic("Menu");
+
+                GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().Enter();
                 isPaused = true;
                 isVictorious = true;
             }
@@ -159,20 +176,23 @@ public class Logic : MonoBehaviour
         GameObject.FindWithTag("Player").GetComponent<PlayerController>().Reroll();
         GameObject.FindWithTag("Player").GetComponent<PlayerController>().RefreshUI();
 
-        foreach (GameObject ent in GameObject.FindGameObjectsWithTag("Enemy")){
+        
+        foreach (GameObject ent in GameObject.FindGameObjectsWithTag("Enemy"))
+        {
             ent.GetComponent<Entity>().TickAttacks();
         }
         foreach (GameObject ent in GameObject.FindGameObjectsWithTag("Enemy"))
         {
             ent.GetComponent<Entity>().TickMoves();
         }
+        
 
-        foreach(GameObject tile in GameObject.FindGameObjectsWithTag("Submerging"))
+        foreach (GameObject tile in GameObject.FindGameObjectsWithTag("Submerging"))
         {
             tile.GetComponent<Tile>().Submerge((float) ((float)waveLength - movesRemaining) / waveLength);
         }
 
-        if ((movesRemaining<=0 || GameObject.FindGameObjectsWithTag("Enemy").Length<=waveClearingTreshold ) && !tutorial)
+        if (movesRemaining<=0  && !tutorial)
         {
             waveNumber++;
 
@@ -326,82 +346,77 @@ public class Logic : MonoBehaviour
                 }
                 break;
             case 2:
-                for (int i = 0; i < 5; i++)
-                {
-                    spawnTable.Add("Rat");
-                }
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 15; i++)
                 {
                     spawnTable.Add("Snake");
                 }
                 break;
             case 3:
-                for (int i = 0; i < 5; i++)
-                {
-                    spawnTable.Add("Rat");
-                }
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     spawnTable.Add("Croc");
                 }
                 break;
             case 4:
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 10; i++)
+                {
+                    spawnTable.Add("Crab");
+                }
+                break;
+            case 5:
+                for (int i = 0; i < 2; i++)
                 {
                     spawnTable.Add("Rat");
                 }
-                for (int i = 0; i < 3; i++)
-                {
-                    spawnTable.Add("Croc");
-                }
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     spawnTable.Add("Snake");
                 }
-                spawnTable.Add("Crab");
-                break;
-            case 5:
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < 2; i++)
                 {
-                    spawnTable.Add("Rat");
+                    spawnTable.Add("Crab");
                 }
-                spawnTable.Add("Necromancer");
+                for (int i = 0; i < 2; i++)
+                {
+                    spawnTable.Add("Croc");
+                }
                 break;
             case 6:
-                for (int i = 0; i < 3; i++)
-                {
-                    spawnTable.Add("Necromancer");
-                }
+                spawnTable.Add("Necromancer");
                 break;
             case 7:
-                for (int i = 0; i < 3; i++)
-                {
-                    spawnTable.Add("Necromancer");
-                }
-                for (int i = 0; i < 7; i++)
+                spawnTable.Add("Necromancer");
+                for (int i = 0; i < 10; i++)
                 {
                     spawnTable.Add("Skeleton");
                 }
                 break;
             case 8:
-                spawnTable.Add("Necromancer");
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < 2; i++)
                 {
-                    spawnTable.Add("Crab");
+                    spawnTable.Add("Necromancer");
                 }
-                for (int i = 0; i < 5; i++)
+                break;
+            case 9:
+                for (int i = 0; i < 3; i++)
                 {
-                    spawnTable.Add("Skeleton");
+                    spawnTable.Add("Necromancer");
                 }
                 break;
             default:
                 break;
-
         }
-
-        
-
         return spawnTable;
+    }
+
+    public void StartingSpawn()
+    {
+        int x = 4;
+        int y = 6;
+
+        grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester = Instantiate(Resources.Load("Prefabs/Enemies/Chest 3") as GameObject, GameObject.Find("Arena/Entities").transform).GetComponent<Entity>();
+        grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester.position = grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y];
+        grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].contester.transform.position = grid[mapSize / 2 - 4 + x, mapSize / 2 - 4 + y].transform.position;
     }
 
     private void SpawnEnemies()
@@ -431,8 +446,8 @@ public class Logic : MonoBehaviour
             int attempts = 0;
             do
             {
-                x = (int)Random.Range(0, (float)grid.GetLength(0) - 1);
-                y = (int)Random.Range(0, (float)grid.GetLength(1) - 1);
+                x = (int)Random.Range(waveNumber, (float)grid.GetLength(0) - 1 - waveNumber);
+                y = (int)Random.Range(waveNumber, (float)grid.GetLength(1) - 1 - waveNumber);
                 attempts++;
             }
             while (!(attempts < maxAttempts && grid[x, y].contester == null && !grid[x, y].obstructed && (Mathf.Abs(playerX - x) > waveSpawnDistance || Mathf.Abs(playerY - y) > waveSpawnDistance)));
@@ -452,6 +467,8 @@ public class Logic : MonoBehaviour
 
     public void UpdateCounter()
     {
+        
+        GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text = "Enemies: " + GameObject.FindGameObjectsWithTag("Enemy").Where((x)=>!x.GetComponent<Chest>() && !(x.GetComponent<Knight>() && x.GetComponent<Knight>().invincible)).Count();
         if (waveNumber != bossWave)
         {
             GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n" + movesRemaining + " moves untill the next wave";
@@ -460,9 +477,6 @@ public class Logic : MonoBehaviour
         {
             GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n";
         }
-        GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text = "Enemies: " + GameObject.FindGameObjectsWithTag("Enemy").Where((x)=>!x.GetComponent<Chest>() && !(x.GetComponent<Knight>() && x.GetComponent<Knight>().invincible)).Count();
-
-
     }
 
     public void UpdatePacer()

@@ -71,11 +71,11 @@ public class Entity : MonoBehaviour
     }
     private void Invoke_Death()
     {
-        Destroy(gameObject);
         CancelInvoke();
+        Destroy(gameObject);
     }
 
-    void Start()
+    public virtual void Start()
     {
         SetSchemes();
         GetComponent<Animator>().Play(anim_spawn);
@@ -133,6 +133,10 @@ public class Entity : MonoBehaviour
             path.Clear();
             path.Add(position);
             pathBlocked = false;
+            if (moves.Count == 0)
+            {
+                Debug.Log("here");
+            }
             Scheme scheme = moves.ElementAt((int)Random.Range(0, (float)moves.Count));
 
 
@@ -196,7 +200,7 @@ public class Entity : MonoBehaviour
         path.Add(newPos);
     }
 
-    public void Transition(float speed)
+    public virtual void Transition(float speed)
     {
         CancelInvoke();
 
@@ -221,6 +225,10 @@ public class Entity : MonoBehaviour
         {
             transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, 3f / 4 + progress / 4f);
         }
+        else
+        {
+            transform.position = Vector2.Lerp(path.ElementAt(0).transform.position, path.ElementAt(1).transform.position, progress);
+        }
 
         if (progress >= 1f)
         {
@@ -243,7 +251,7 @@ public class Entity : MonoBehaviour
         pickup.Pick();
     }
 
-    public void PerformAttacks(float foo)
+    public virtual void PerformAttacks(float foo)
     {
         CancelInvoke();
 
@@ -253,7 +261,7 @@ public class Entity : MonoBehaviour
         InvokeRepeating("PerformAttacks", 0, secondsPerAttack / 30f / targets.Count);
 
     }
-    public void PerformAttacks()
+    public virtual void PerformAttacks()
     {
         progress += progressGain;
         transform.position = Vector2.Lerp(position.transform.position, targets.ElementAt(0).transform.position, progress/3);
