@@ -138,6 +138,12 @@ public class Player : Entity
                 newScheme.scheme.Add(new Vector2(0, -1));
                 newScheme.scheme.Add(new Vector2(-1, 0));
                 break;
+            case "X":
+                newScheme.scheme.Add(new Vector2(1, 1));
+                newScheme.scheme.Add(new Vector2(-1, -1));
+                newScheme.scheme.Add(new Vector2(-1, 1));
+                newScheme.scheme.Add(new Vector2(1, -1));
+                break;
             default:
                 break;
         }
@@ -270,6 +276,8 @@ public class Player : Entity
     {
         if (isAttacking)
         {
+            GetComponent<PlayerController>().rerollAttack = true;
+
             actionPerformed = true;
             targets.Clear();
             foreach (Vector2 vec in attacks.ElementAt(0).scheme)
@@ -310,6 +318,7 @@ public class Player : Entity
                 if (maxHP < 12)
                 {
                     maxHP++;
+                    currHP++;
                 }
                 else
                 {
@@ -373,6 +382,8 @@ public class Player : Entity
     {
         if (isMoving)
         {
+            GetComponent<PlayerController>().rerollMove = true;
+
             base.TickMoves();
             isMoving = false;
         }
@@ -387,6 +398,7 @@ public class Player : Entity
 
     public override void PerformAttacks(float foo)
     {
+        attackDelay = 0f;
         Camera.main.GetComponent<CameraHandler>().following = false;
         base.PerformAttacks(foo);
     }

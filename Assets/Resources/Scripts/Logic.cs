@@ -115,11 +115,13 @@ public class Logic : MonoBehaviour
         GameObject.FindWithTag("Player").GetComponent<Player>().isMoving = false;
         GameObject.FindWithTag("Player").GetComponent<Player>().isAttacking = false;
         GameObject.FindWithTag("Player").GetComponent<Player>().actionPerformed = false;
+        GameObject.FindWithTag("Player").GetComponent<Player>().alive = true;
 
 
+        Camera.main.GetComponent<CameraHandler>().following = true;
 
         waveNumber = 0;
-
+        movesRemaining = 0;
         currentTick = 0;
         isPaused = false;
         tutorial = false;
@@ -197,6 +199,10 @@ public class Logic : MonoBehaviour
             waveNumber++;
 
             movesRemaining = waveLength;
+            if (waveNumber == bossWave)
+            {
+                movesRemaining *= 2;
+            }
             SpawnEnemies();
             ShrinkMap();
             GameObject.Find("Canvas").GetComponent<UI>().DisplayWave(waveNumber);
@@ -346,37 +352,37 @@ public class Logic : MonoBehaviour
                 }
                 break;
             case 2:
-                for (int i = 0; i < 15; i++)
+                for (int i = 0; i < 5; i++)
                 {
                     spawnTable.Add("Snake");
                 }
                 break;
             case 3:
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     spawnTable.Add("Croc");
                 }
                 break;
             case 4:
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     spawnTable.Add("Crab");
                 }
                 break;
             case 5:
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     spawnTable.Add("Rat");
                 }
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     spawnTable.Add("Snake");
                 }
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     spawnTable.Add("Crab");
                 }
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 1; i++)
                 {
                     spawnTable.Add("Croc");
                 }
@@ -392,13 +398,13 @@ public class Logic : MonoBehaviour
                 }
                 break;
             case 8:
-                for (int i = 0; i < 2; i++)
+                for (int i = 0; i < 10; i++)
                 {
-                    spawnTable.Add("Necromancer");
+                    spawnTable.Add("Skeleton");
                 }
                 break;
             case 9:
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     spawnTable.Add("Necromancer");
                 }
@@ -471,7 +477,7 @@ public class Logic : MonoBehaviour
         GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text = "Enemies: " + GameObject.FindGameObjectsWithTag("Enemy").Where((x)=>!x.GetComponent<Chest>() && !(x.GetComponent<Knight>() && x.GetComponent<Knight>().invincible)).Count();
         if (waveNumber != bossWave)
         {
-            GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\n" + movesRemaining + " moves untill the next wave";
+            GameObject.Find("Canvas/Enemy Counter").GetComponent<TextMeshProUGUI>().text += "\nNext wave in: " + movesRemaining;
         }
         else
         {

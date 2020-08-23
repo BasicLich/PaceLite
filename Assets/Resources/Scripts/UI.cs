@@ -11,9 +11,20 @@ public class UI : MonoBehaviour
     {
         GameObject.Find("Canvas/Wave Number").GetComponent<TextMeshProUGUI>().text = ""+number;
         GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha = 1f;
-        InvokeRepeating("WaveFade", 1f, 0.01f);
+        InvokeRepeating("WaveFadeIn", 0f, 0.01f);
+
     }
-    private void WaveFade()
+    private void WaveFadeIn()
+    {
+        GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha += 0.01f;
+        if (GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha >=1)
+        {
+            CancelInvoke();
+            InvokeRepeating("WaveFadeOut", 1f, 0.01f);
+        }
+
+    }
+    private void WaveFadeOut()
     {
         GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha -= 0.01f;
         if(GameObject.Find("Canvas/Next Wave/Image").GetComponent<CanvasGroup>().alpha <= 0)

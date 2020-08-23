@@ -14,6 +14,9 @@ public class PlayerController : MonoBehaviour
     public List<string> moves;
     public List<string> attacks;
 
+    public bool rerollAttack = false;
+    public bool rerollMove = false;
+
     public void Start()
     {
         moves = new List<string>();
@@ -29,12 +32,61 @@ public class PlayerController : MonoBehaviour
 
     public void Reroll()
     {
-        movementType = moves.ElementAt(Random.Range(0, moves.Count));
-        attackType = attacks.ElementAt(Random.Range(0, attacks.Count));
+        string prevMovement = movementType;
+        string prevAttack = attackType;
+
+        if (rerollAttack || (!rerollAttack && !rerollMove))
+        {
+            if (attacks.Count > 3)
+            {
+                do
+                {
+                    attackType = attacks.ElementAt(Random.Range(0, attacks.Count));
+                } while (movementType.Equals(prevMovement));
+            }
+            rerollAttack = false;
+        }
+        if (rerollMove || (!rerollAttack && !rerollMove))
+        {
+            if (moves.Count > 3)
+            {
+                do
+                {
+                    movementType = moves.ElementAt(Random.Range(0, moves.Count));
+                } while (movementType.Equals(prevMovement));
+            }
+            rerollMove = false;
+        }
     }
 
     void Update()
     {
+        if (!GameObject.Find("Canvas/DeathScreen").GetComponent<SubMenu>().IsOn() && !GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().IsOn() && !GameObject.Find("Canvas/Menu").GetComponent<SubMenu>().IsOn() && !GameObject.Find("Canvas/Pause").GetComponent<SubMenu>().IsOn() && !GameObject.Find("Canvas/Tutorial").GetComponent<SubMenu>().IsOn())
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                GameObject.Find("Arena").GetComponent<Logic>().SetPaused(true);
+                GameObject.Find("Canvas/Pause").GetComponent<SubMenu>().Enter();
+                Camera.main.GetComponent<CameraHandler>().StopMusic();
+                return;
+            }
+        }
+        if (GameObject.Find("Canvas/Pause").GetComponent<SubMenu>().IsOn())
+        {
+            
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Application.Quit();
+            }
+            else if (Input.anyKeyDown)
+            {
+                GameObject.Find("Arena").GetComponent<Logic>().SetPaused(false);
+                GameObject.Find("Canvas/Pause").GetComponent<SubMenu>().Exit();
+                Camera.main.GetComponent<CameraHandler>().ResumeMusic();
+                return;
+            }
+        }
+
         if (!GameObject.Find("Arena").GetComponent<Logic>().IsPaused())
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -111,7 +163,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            if (GetComponent<Player>().currHP == 0 || GameObject.Find("Arena").GetComponent<Logic>().isVictorious)
+            if (!GetComponent<Player>().alive || GameObject.Find("Arena").GetComponent<Logic>().isVictorious)
             {
                 if (Input.GetKeyDown(KeyCode.Escape))
                 {
@@ -129,6 +181,7 @@ public class PlayerController : MonoBehaviour
                     GameObject.Find("Canvas/DeathScreen").GetComponent<SubMenu>().Exit();
                     GameObject.Find("Canvas/VictoryScreen").GetComponent<SubMenu>().Exit();
                     GameObject.Find("Arena").GetComponent<Logic>().Restart();
+                    GameObject.Find("Arena").GetComponent<Logic>().GameStart();
                 }
             }
         }
@@ -190,7 +243,7 @@ public class PlayerController : MonoBehaviour
             }
             else if (i < GetComponent<Player>().maxHP)
             {
-                hp.GetComponent<Image>().color = new Color(hp.GetComponent<Image>().color.r, hp.GetComponent<Image>().color.g, hp.GetComponent<Image>().color.b, 100 / 255f);
+                hp.GetComponent<Image>().color = new Color(1f, 1f, 1f, 100f / 255f);
             }
             else
             {

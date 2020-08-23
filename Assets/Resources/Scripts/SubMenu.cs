@@ -15,9 +15,12 @@ public class SubMenu : MonoBehaviour
     public GameObject fade;
     public GameObject content;
 
+    public bool isOn = false;
+
 
     public void Enter()
     {
+        isOn = true;
         progress = speed;
         if (raycast)
         {
@@ -28,6 +31,7 @@ public class SubMenu : MonoBehaviour
     }
     public void Exit()
     {
+        isOn = false;
         progress = -speed;
         content.SetActive(false);
         fade.GetComponent<Image>().raycastTarget = false;
@@ -58,5 +62,10 @@ public class SubMenu : MonoBehaviour
             newColor.a = 0f;
         }
         return newColor;
+    }
+
+    public bool IsOn()
+    {
+        return isOn;
     }
 }

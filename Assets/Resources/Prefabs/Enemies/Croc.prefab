@@ -247,9 +247,9 @@ MonoBehaviour:
   anim_move: Move_Animal
   anim_drown: Drown_Animal
   anim_spawn: Spawn_Drop
-  currHP: 2
-  maxHP: 2
-  str: 2
+  currHP: 1
+  maxHP: 1
+  str: 1
   bleeding: 1
   friendlyFiring: 0
   actionPerformed: 0

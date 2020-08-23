@@ -21,6 +21,7 @@ public class Entity : MonoBehaviour
     protected float secondsPerMove = 0.5f;
     protected float secondsPerAttack = 0.2f;
     protected float progressGain;
+    protected float attackDelay;
 
     public int currHP;
     public int maxHP;
@@ -31,7 +32,7 @@ public class Entity : MonoBehaviour
     public bool friendlyFiring;
     private int direction = 0;
     public  bool actionPerformed = false;
-    protected bool alive = true;
+    public bool alive = true;
     public bool stationary = false;
     private bool pathBlocked = false;
     private bool enemyInRange = false;
@@ -94,6 +95,7 @@ public class Entity : MonoBehaviour
         }
         enemyInRange = false;
         actionPerformed = false;
+        attackDelay = 0f;
 
         targets.Clear();
         for (int i = 0; i < 4; i++)
@@ -105,8 +107,8 @@ public class Entity : MonoBehaviour
                 {
                     if (position.Neighbour((int)vec.x, (int)vec.y).contester && (position.Neighbour((int)vec.x, (int)vec.y).contester.GetComponent<Player>() || friendlyFiring))
                     {
-                        position.Neighbour((int)vec.x, (int)vec.y).contester.TakeDamage(str);
                         targets.Add(position.Neighbour((int)vec.x, (int)vec.y));
+                        attackDelay = position.Neighbour((int)vec.x, (int)vec.y).contester.path.Count > 0 ? secondsPerMove : 0f;
                         enemyInRange = true;
                     }
                     else
@@ -232,9 +234,12 @@ public class Entity : MonoBehaviour
 
         if (progress >= 1f)
         {
-            if (path.ElementAt(1).pickup && !pathBlocked)
+            if (path.ElementAt(1).pickup)
             {
-                ApplyPickup(path.ElementAt(1).pickup);
+                if (!(pathBlocked && path.Count == 3))
+                {
+                    ApplyPickup(path.ElementAt(1).pickup);
+                }
             }
             path.RemoveAt(0);
             progress -= 1f;
@@ -258,7 +263,7 @@ public class Entity : MonoBehaviour
         progressGain = 0.1f;
         progress = 0;
 
-        InvokeRepeating("PerformAttacks", 0, secondsPerAttack / 30f / targets.Count);
+        InvokeRepeating("PerformAttacks", attackDelay, secondsPerAttack / 30f / targets.Count);
 
     }
     public virtual void PerformAttacks()
@@ -268,6 +273,10 @@ public class Entity : MonoBehaviour
 
         if (progress >= 1f)
         {
+            if (targets.First().contester && targets.First().contester.GetComponent<Player>())
+            {
+                targets.First().contester.TakeDamage(str);
+            }
             Instantiate(Resources.Load("Prefabs/Slash") as GameObject, GameObject.Find("Arena/Effects").transform).GetComponent<Slash>().Launch(targets.ElementAt(0).transform.position, str, tag == "Player");
             targets.RemoveAt(0);
             progress -= 1f;

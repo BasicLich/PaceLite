@@ -31,8 +31,17 @@ public class CameraHandler : MonoBehaviour
         sfx_hurt = Resources.Load("SFX/Hurt") as AudioClip;
 
 
-        GetComponent<AudioSource>().PlayOneShot(sfx_click, 0f);
+        GetComponent<AudioSource>().PlayOneShot(sfx_click, 0.01f);
         ChangeMusic("Menu");
+    }
+
+    public void StopMusic()
+    {
+        GetComponent<AudioSource>().Pause();
+    }
+    public void ResumeMusic()
+    {
+        GetComponent<AudioSource>().Play();
     }
 
     public void ChangeMusic(string music)
@@ -78,7 +87,7 @@ public class CameraHandler : MonoBehaviour
         }
         else if (sfx.Equals("Step"))
         {
-            GetComponent<AudioSource>().PlayOneShot(sfx_step, 0.5f);
+            GetComponent<AudioSource>().PlayOneShot(sfx_step, 0.2f);
 
         }
         else if (sfx.Equals("Hurt"))
